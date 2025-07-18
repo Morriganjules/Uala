@@ -58,6 +58,7 @@ dependencies {
     testImplementation("io.mockk:mockk:1.13.5")
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
+    testImplementation("app.cash.turbine:turbine:1.0.0")
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
