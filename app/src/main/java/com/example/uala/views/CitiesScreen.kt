@@ -52,7 +52,8 @@ fun CitiesScreen(
                 value = query,
                 onValueChange = onQueryChange,
                 label = { Text("Search") },
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
+                singleLine = true
             )
             Spacer(modifier = Modifier.width(8.dp))
             Column {
