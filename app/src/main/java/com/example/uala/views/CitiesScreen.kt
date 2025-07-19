@@ -15,6 +15,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -31,6 +32,7 @@ import com.example.uala.model.CityUiModel
 @Composable
 fun CitiesScreen(
     query: String,
+    isLoading: Boolean,
     cities: List<CityUiModel>,
     onlyFavorites: Boolean,
     onDetailClick: (Long) -> Unit,
@@ -62,45 +64,55 @@ fun CitiesScreen(
             }
         }
 
-        LazyColumn {
-            items(cities) { cityModel ->
-                Column {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(8.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        IconButton(onClick = { onDetailClick(cityModel.city.id) }) {
-                            Icon(
-                                imageVector = Icons.Default.Info,
-                                contentDescription = "Más información",
-                                tint = Color.Blue
-                            )
-                        }
-
-                        Column(
+        if (isLoading) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
+            }
+        } else {
+            LazyColumn {
+                items(cities) { cityModel ->
+                    Column {
+                        Row(
                             modifier = Modifier
-                                .weight(1f)
-                                .clickable { onCityClick(cityModel) }
-                                .padding(start = 8.dp) // para separar del ícono
+                                .fillMaxWidth()
+                                .padding(8.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Text("${cityModel.city.name}, ${cityModel.city.country}")
-                            Text("${cityModel.city.coord.lat}, ${cityModel.city.coord.lon}")
-                        }
+                            IconButton(onClick = { onDetailClick(cityModel.city.id) }) {
+                                Icon(
+                                    imageVector = Icons.Default.Info,
+                                    contentDescription = "Más información",
+                                    tint = Color.Blue
+                                )
+                            }
 
-                        IconButton(onClick = { onFavoriteClick(cityModel.city.id) }) {
-                            Icon(
-                                imageVector = Icons.Default.Star,
-                                contentDescription = "Favorito",
-                                tint = if (cityModel.isFavorite) Color.Yellow else Color.Gray
-                            )
+                            Column(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .clickable { onCityClick(cityModel) }
+                                    .padding(start = 8.dp) // para separar del ícono
+                            ) {
+                                Text("${cityModel.city.name}, ${cityModel.city.country}")
+                                Text("${cityModel.city.coord.lat}, ${cityModel.city.coord.lon}")
+                            }
+
+                            IconButton(onClick = { onFavoriteClick(cityModel.city.id) }) {
+                                Icon(
+                                    imageVector = Icons.Default.Star,
+                                    contentDescription = "Favorito",
+                                    tint = if (cityModel.isFavorite) Color.Yellow else Color.Gray
+                                )
+                            }
                         }
+                        HorizontalDivider()
                     }
-                    HorizontalDivider()
                 }
             }
         }
+
     }
 }

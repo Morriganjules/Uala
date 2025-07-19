@@ -67,79 +67,74 @@ class MainActivity : ComponentActivity() {
 
         NavHost(navController = navController, startDestination = "cities") {
             composable("cities") {
-                if (isLoading) {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
+                if (isLandscape) {
+                    Row(
+                        Modifier.fillMaxSize(),
+                        horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        CircularProgressIndicator()
-                    }
-                } else {
-                    if (isLandscape) {
-                        Row(
-                            Modifier.fillMaxSize(),
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxHeight()
-                                    .weight(0.5f)
-                                    .zIndex(2f)
-                                    .background(color = Color.White)
-                            ) {
-                                CitiesScreen(
-                                    query = query,
-                                    cities = cities,
-                                    onlyFavorites = onlyFavorites,
-                                    onFavoriteClick = viewModel::toggleFavorite,
-                                    onToggleShowFavorites = viewModel::toggleShowOnlyFavorites,
-                                    onQueryChange = viewModel::updateQuery,
-                                    onCityClick = { city ->
-                                        viewModel.setSelectedCity(city)
-                                    },
-                                    onDetailClick = { cityId ->
-                                        navController.navigate("details/$cityId")
-                                    }
-                                )
-                            }
-                            Box(modifier = Modifier
+                        Box(
+                            modifier = Modifier
+                                .fillMaxHeight()
                                 .weight(0.5f)
-                                .zIndex(1f)) {
-                                selectedCity?.let { city ->
-                                    key(city) {
-                                        MapScreen(
-                                            lat = city.city.coord.lat,
-                                            lon = city.city.coord.lon,
-                                            name = city.city.name
-                                        )
-                                    }
-                                } ?: Box(
-                                    modifier = Modifier.fillMaxSize(),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Text("Seleccioná una ciudad")
+                                .zIndex(2f)
+                                .background(color = Color.White)
+                        ) {
+                            CitiesScreen(
+                                isLoading = isLoading,
+                                query = query,
+                                cities = cities,
+                                onlyFavorites = onlyFavorites,
+                                onFavoriteClick = viewModel::toggleFavorite,
+                                onToggleShowFavorites = viewModel::toggleShowOnlyFavorites,
+                                onQueryChange = viewModel::updateQuery,
+                                onCityClick = { city ->
+                                    viewModel.setSelectedCity(city)
+                                },
+                                onDetailClick = { cityId ->
+                                    navController.navigate("details/$cityId")
                                 }
+                            )
+                        }
+                        Box(
+                            modifier = Modifier
+                                .weight(0.5f)
+                                .zIndex(1f)
+                        ) {
+                            selectedCity?.let { city ->
+                                key(city) {
+                                    MapScreen(
+                                        lat = city.city.coord.lat,
+                                        lon = city.city.coord.lon,
+                                        name = city.city.name
+                                    )
+                                }
+                            } ?: Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text("Seleccioná una ciudad")
                             }
                         }
-                    } else {
-                        CitiesScreen(
-                            query = query,
-                            cities = cities,
-                            onlyFavorites = onlyFavorites,
-                            onFavoriteClick = viewModel::toggleFavorite,
-                            onToggleShowFavorites = viewModel::toggleShowOnlyFavorites,
-                            onQueryChange = viewModel::updateQuery,
-                            onCityClick = { city ->
-                                val lat = city.city.coord.lat.toString()
-                                val lon = city.city.coord.lon.toString()
-                                val name = city.city.name
-                                navController.navigate("map/$lat/$lon/$name")
-                            },
-                            onDetailClick = { cityId ->
-                                navController.navigate("details/$cityId")
-                            }
-                        )
                     }
+                } else {
+                    CitiesScreen(
+                        isLoading = isLoading,
+                        query = query,
+                        cities = cities,
+                        onlyFavorites = onlyFavorites,
+                        onFavoriteClick = viewModel::toggleFavorite,
+                        onToggleShowFavorites = viewModel::toggleShowOnlyFavorites,
+                        onQueryChange = viewModel::updateQuery,
+                        onCityClick = { city ->
+                            val lat = city.city.coord.lat.toString()
+                            val lon = city.city.coord.lon.toString()
+                            val name = city.city.name
+                            navController.navigate("map/$lat/$lon/$name")
+                        },
+                        onDetailClick = { cityId ->
+                            navController.navigate("details/$cityId")
+                        }
+                    )
                 }
             }
             composable(
