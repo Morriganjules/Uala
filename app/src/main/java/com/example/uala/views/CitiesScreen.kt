@@ -23,6 +23,8 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -75,6 +77,7 @@ fun CitiesScreen(
         } else {
             LazyColumn {
                 items(cities) { cityModel ->
+                    val isFavorite = remember { mutableStateOf(cityModel.isFavorite) }
                     Column {
                         Row(
                             modifier = Modifier
@@ -95,17 +98,20 @@ fun CitiesScreen(
                                 modifier = Modifier
                                     .weight(1f)
                                     .clickable { onCityClick(cityModel) }
-                                    .padding(start = 8.dp) // para separar del ícono
+                                    .padding(start = 8.dp)
                             ) {
                                 Text("${cityModel.city.name}, ${cityModel.city.country}")
                                 Text("${cityModel.city.coord.lat}, ${cityModel.city.coord.lon}")
                             }
 
-                            IconButton(onClick = { onFavoriteClick(cityModel.city.id) }) {
+                            IconButton(onClick = {
+                                onFavoriteClick(cityModel.city.id)
+                                isFavorite.value = !isFavorite.value
+                            }) {
                                 Icon(
                                     imageVector = Icons.Default.Star,
                                     contentDescription = "Favorito",
-                                    tint = if (cityModel.isFavorite) Color.Yellow else Color.Gray
+                                    tint = if (isFavorite.value) Color.Yellow else Color.Gray
                                 )
                             }
                         }
