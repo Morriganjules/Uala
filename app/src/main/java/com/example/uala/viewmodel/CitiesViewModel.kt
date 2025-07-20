@@ -12,6 +12,7 @@ import com.example.uala.model.CityUiModel
 import com.example.uala.service.citiesModule.CitiesRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -25,6 +26,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
+@OptIn(FlowPreview::class)
 @HiltViewModel
 class CitiesViewModel @Inject constructor(
     private val repository: CitiesRepository,
@@ -77,10 +79,9 @@ class CitiesViewModel @Inject constructor(
         viewModelScope.launch {
             combine(
                 _cities,
-                _query.debounce(300),
-                _favorites
-            ) { cities, query, favorites ->
-                Triple(cities, query, favorites)
+                _query.debounce(300)
+            ) { cities, query ->
+                Pair(cities, query)
             }.collectLatest {
                 updateFilteredCities()
             }
@@ -90,17 +91,45 @@ class CitiesViewModel @Inject constructor(
             _showOnlyFavorites
                 .collectLatest {
                     _isLoading.value = true
-                    updateFilteredCities()
+                    if(showOnlyFavorites.value){
+                        updateFavoriteCities()
+                    } else {
+                        updateFilteredCities()
+                    }
                     _isLoading.value = false
                 }
         }
+    }
+
+    private suspend fun updateFavoriteCities() {
+        val cities = _cities.value
+        val query = _query.value
+        val favorites = _favorites.value
+
+        val result = withContext(Dispatchers.Default) {
+            val favoriteCities = cities.filter { it.id in favorites }
+
+            val filtered = if (query.isBlank()) {
+                favoriteCities
+            } else {
+                favoriteCities.filter {
+                    val fullName = "${it.name}, ${it.country}"
+                    fullName.startsWith(query, ignoreCase = true)
+                }
+            }
+
+            filtered
+                .sortedWith(compareBy({ it.name.lowercase() }, { it.country.lowercase() }))
+                .map { city -> CityUiModel(city, isFavorite = true) }
+        }
+
+        _filteredCities.value = result
     }
 
     private suspend fun updateFilteredCities() {
         val cities = _cities.value
         val query = _query.value
         val favorites = _favorites.value
-        val onlyFavs = _showOnlyFavorites.value
 
         val result = withContext(Dispatchers.Default) {
             val filtered = if (query.isBlank()) {
@@ -118,7 +147,6 @@ class CitiesViewModel @Inject constructor(
                     val isFav = city.id in favorites
                     CityUiModel(city, isFav)
                 }
-                .filter { if (onlyFavs) it.isFavorite else true }
         }
 
         _filteredCities.value = result
